@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="card" style="margin-bottom:16px;">
+    <h2 style="margin-top:0;">{{ p.first_name }} {{ p.last_name }}</h2>
+    <div class="grid">
+      <div><strong>Phone:</strong> {{ p.phone or '—' }}</div>
+      <div><strong>Email:</strong> {{ p.email or '—' }}</div>
+      <div><strong>DOB:</strong> {{ p.dob or '—' }}</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h3 style="margin:0;">Cases</h3>
+      <a class="btn" href="{{ url_for('case_new', participant_id=p.id) }}">Add Case</a>
+    </div>
+    <table class="table" style="margin-top:12px;">
+      <thead>
+        <tr>
+          <th>Case #</th>
+          <th>Date of Conviction</th>
+          <th>Charges</th>
+          <th>Checklist</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in p.cases %}
+        <tr>
+          <td><a href="{{ url_for('case_detail', case_id=c.id) }}">{{ c.case_number }}</a></td>
+          <td>{{ c.date_of_conviction or '—' }}</td>
+          <td>{{ c.charges[:80] ~ ('…' if c.charges and c.charges|length>80 else '') }}</td>
+          <td>
+            <span class="badge">{{ '✔' if c.petition_completed else '○' }} Petition</span>
+            <span class="badge">{{ '✔' if c.interview_completed else '○' }} Interview</span>
+            <span class="badge">{{ '✔' if c.revenue_recovery_contacted else '○' }} R&R</span>
+            <span class="badge">{{ '✔' if c.declaration_completed else '○' }} Declaration</span>
+            <span class="badge">{{ '✔' if c.social_bio_completed else '○' }} Social Bio</span>
+            <span class="badge">{{ '✔' if c.court_case_filed else '○' }} Filed</span>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4">No cases yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

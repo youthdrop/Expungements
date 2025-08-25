@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="card" style="margin-bottom:16px;">
+    <h2 style="margin-top:0;">Reports</h2>
+    <form method="get" action="{{ url_for('reports') }}">
+      <div class="grid">
+        <div class="field">
+          <label for="from">From (YYYY-MM-DD)</label>
+          <input id="from" name="from" type="date" value="{{ from_str }}">
+        </div>
+        <div class="field">
+          <label for="to">To (YYYY-MM-DD)</label>
+          <input id="to" name="to" type="date" value="{{ to_str }}">
+        </div>
+      </div>
+      <button class="btn" type="submit">Apply Filters</button>
+      <a class="btn" href="{{ url_for('reports') }}">Clear</a>
+      <a class="btn primary" href="{{ url_for('reports_csv', **({'from': from_str} if from_str else {}), **({'to': to_str} if to_str else {})) }}" style="margin-left:8px;">Download CSV</a>
+    </form>
+  </div>
+
+  <div class="grid" style="margin-bottom:16px;">
+    <div class="card">
+      <strong>Total Participants</strong>
+      <div style="font-size:28px;">{{ total_participants }}</div>
+    </div>
+    <div class="card">
+      <strong>Cases (filtered / total)</strong>
+      <div style="font-size:28px;">{{ count_cases_filtered }} / {{ count_cases_total }}</div>
+    </div>
+    <div class="card">
+      <strong>Notes (filtered / total)</strong>
+      <div style="font-size:28px;">{{ count_notes_filtered }} / {{ count_notes_total }}</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <h3 style="margin-top:0;">Checklist Completion (filtered cases)</h3>
+    <div class="grid">
+      <div><strong>Petition Completed:</strong> {{ checklist.petition_completed }}</div>
+      <div><strong>Interview Completed:</strong> {{ checklist.interview_completed }}</div>
+      <div><strong>R&R Contacted:</strong> {{ checklist.revenue_recovery_contacted }}</div>
+      <div><strong>Declaration Completed:</strong> {{ checklist.declaration_completed }}</div>
+      <div><strong>Social Bio Completed:</strong> {{ checklist.social_bio_completed }}</div>
+      <div><strong>Court Case Filed:</strong> {{ checklist.court_case_filed }}</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0;">Cases (filtered list)</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Participant</th>
+          <th>Case #</th>
+          <th>Conviction Date</th>
+          <th>Petition</th>
+          <th>Interview</th>
+          <th>R&R</th>
+          <th>Declaration</th>
+          <th>Social Bio</th>
+          <th>Filed</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in cases %}
+          <tr>
+            <td>{{ c.participant.last_name }}, {{ c.participant.first_name }}</td>
+            <td><a href="{{ url_for('case_detail', case_id=c.id) }}">{{ c.case_number }}</a></td>
+            <td>{{ c.date_of_conviction or '—' }}</td>
+            <td>{{ '✔' if c.petition_completed else '○' }}</td>
+            <td>{{ '✔' if c.interview_completed else '○' }}</td>
+            <td>{{ '✔' if c.revenue_recovery_contacted else '○' }}</td>
+            <td>{{ '✔' if c.declaration_completed else '○' }}</td>
+            <td>{{ '✔' if c.social_bio_completed else '○' }}</td>
+            <td>{{ '✔' if c.court_case_filed else '○' }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="9">No cases match this filter.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

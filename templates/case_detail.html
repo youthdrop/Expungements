@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="card" style="margin-bottom:16px;">
+    <h2 style="margin-top:0;">Case {{ c.case_number }}</h2>
+    <form method="post" action="{{ url_for('case_update', case_id=c.id) }}">
+      <div class="grid">
+        <div class="field">
+          <label for="case_number">Case Number</label>
+          <input id="case_number" name="case_number" type="text" value="{{ c.case_number }}">
+        </div>
+        <div class="field">
+          <label for="date_of_conviction">Date of Conviction</label>
+          <input id="date_of_conviction" name="date_of_conviction" type="date" value="{{ c.date_of_conviction }}">
+        </div>
+      </div>
+      <div class="field">
+        <label for="charges">Charges</label>
+        <textarea id="charges" name="charges">{{ c.charges or '' }}</textarea>
+      </div>
+
+      <h3>Checklist</h3>
+      <div class="checklist">
+        <label><input type="checkbox" name="petition_completed" {% if c.petition_completed %}checked{% endif %}> Petition Completed</label>
+        <label><input type="checkbox" name="interview_completed" {% if c.interview_completed %}checked{% endif %}> Interview Completed</label>
+        <label><input type="checkbox" name="revenue_recovery_contacted" {% if c.revenue_recovery_contacted %}checked{% endif %}> Revenue & Recovery Contacted</label>
+        <label><input type="checkbox" name="declaration_completed" {% if c.declaration_completed %}checked{% endif %}> Declaration Completed</label>
+        <label><input type="checkbox" name="social_bio_completed" {% if c.social_bio_completed %}checked{% endif %}> Social Bio Completed</label>
+        <label><input type="checkbox" name="court_case_filed" {% if c.court_case_filed %}checked{% endif %}> Court Case Filed</label>
+      </div>
+
+      <div style="margin-top:12px;">
+        <button class="btn primary" type="submit">Save Updates</button>
+        <a class="btn" href="{{ url_for('participant_detail', participant_id=c.participant_id) }}">Back to Participant</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0;">Case Notes</h3>
+    <form method="post" action="{{ url_for('case_add_note', case_id=c.id) }}">
+      <div class="grid">
+        <div class="field">
+          <label for="note_date">Date/Time</label>
+          <input id="note_date" name="note_date" type="datetime-local">
+        </div>
+        <div class="field">
+          <label for="method_of_contact">Method of Contact</label>
+          <select id="method_of_contact" name="method_of_contact">
+            <option value="participant_called">Participant Called</option>
+            <option value="staff_called">Staff Called</option>
+            <option value="meeting">Meeting</option>
+            <option value="court_support">Court Support</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="content">What happened?</label>
+        <textarea id="content" name="content" required></textarea>
+      </div>
+      <button class="btn primary" type="submit">Add Note</button>
+    </form>
+
+    <table class="table" style="margin-top:16px;">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Method</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for n in c.notes %}
+        <tr>
+          <td>{{ n.note_date.strftime("%Y-%m-%d %H:%M") }}</td>
+          <td>{{ n.method_of_contact or '—' }}</td>
+          <td>{{ n.content }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3">No notes yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

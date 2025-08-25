@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="card">
+    <h2 style="margin-top:0;">Add Case for {{ participant.first_name }} {{ participant.last_name }}</h2>
+    <form method="post">
+      <div class="grid">
+        <div class="field">
+          <label for="case_number">Case Number *</label>
+          <input id="case_number" name="case_number" type="text" required value="{{ case.case_number if case else '' }}">
+        </div>
+        <div class="field">
+          <label for="date_of_conviction">Date of Conviction</label>
+          <input id="date_of_conviction" name="date_of_conviction" type="date" value="{{ case.date_of_conviction if case and case.date_of_conviction else '' }}">
+        </div>
+      </div>
+      <div class="field">
+        <label for="charges">Charges</label>
+        <textarea id="charges" name="charges">{{ case.charges if case else '' }}</textarea>
+      </div>
+
+      <div class="checklist">
+        <label><input type="checkbox" name="petition_completed" {{ 'checked' if case and case.petition_completed else '' }}> Petition Completed</label>
+        <label><input type="checkbox" name="interview_completed" {{ 'checked' if case and case.interview_completed else '' }}> Interview Completed</label>
+        <label><input type="checkbox" name="revenue_recovery_contacted" {{ 'checked' if case and case.revenue_recovery_contacted else '' }}> Revenue & Recovery Contacted</label>
+        <label><input type="checkbox" name="declaration_completed" {{ 'checked' if case and case.declaration_completed else '' }}> Declaration Completed</label>
+        <label><input type="checkbox" name="social_bio_completed" {{ 'checked' if case and case.social_bio_completed else '' }}> Social Bio Completed</label>
+        <label><input type="checkbox" name="court_case_filed" {{ 'checked' if case and case.court_case_filed else '' }}> Court Case Filed</label>
+      </div>
+
+      <div style="margin-top:12px;">
+        <button class="btn primary" type="submit">Save Case</button>
+        <a class="btn" href="{{ url_for('participant_detail', participant_id=participant.id) }}">Cancel</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

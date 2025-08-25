@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="card">
+    <h2 style="margin-top:0;">Enroll Participant</h2>
+    <form method="post">
+      <div class="grid">
+        <div class="field">
+          <label for="first_name">First Name *</label>
+          <input id="first_name" name="first_name" type="text" required>
+        </div>
+        <div class="field">
+          <label for="last_name">Last Name *</label>
+          <input id="last_name" name="last_name" type="text" required>
+        </div>
+        <div class="field">
+          <label for="phone">Phone</label>
+          <input id="phone" name="phone" type="text">
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email">
+        </div>
+        <div class="field">
+          <label for="dob">Date of Birth</label>
+          <input id="dob" name="dob" type="date">
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <button class="btn primary" type="submit">Enroll</button>
+        <a class="btn" href="{{ url_for('participants_list') }}">Cancel</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

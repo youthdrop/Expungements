@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="card" style="margin-bottom:16px;">
+    <form method="get">
+      <div class="field">
+        <label for="q">Search participants</label>
+        <input id="q" name="q" type="text" value="{{ q }}" placeholder="Name, email, or phone">
+      </div>
+      <button class="btn" type="submit">Search</button>
+      <a class="btn" href="{{ url_for('participant_new') }}" style="margin-left:8px;">Enroll New Participant</a>
+    </form>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Phone</</th>
+        <th>Email</th>
+        <th>DOB</th>
+        <th>Cases</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in participants %}
+        <tr>
+          <td><a href="{{ url_for('participant_detail', participant_id=p.id) }}">{{ p.last_name }}, {{ p.first_name }}</a></td>
+          <td>{{ p.phone or '' }}</td>
+          <td>{{ p.email or '' }}</td>
+          <td>{{ p.dob or '' }}</td>
+          <td>{{ p.cases|length }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5">No participants yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

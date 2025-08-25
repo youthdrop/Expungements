@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Expungements</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="header container">
+    <a class="brand" href="{{ url_for('index') }}">EXPUNGEMENTS</a>
+    <nav>
+      {% if current_user.is_authenticated %}
+        <span style="margin-right:8px;color:#6b6b6b;">{{ current_user.email }}</span>
+        <a href="{{ url_for('participants_list') }}">Participants</a>
+        <a href="{{ url_for('reports') }}">Reports</a>
+        <a href="{{ url_for('participant_new') }}" class="btn">Enroll Participant</a>
+        {% if current_user.is_admin %}<a href="{{ url_for('register') }}" class="btn" style="margin-left:8px;">Add User</a>{% endif %}
+      <a href="{{ url_for('logout') }}" class="btn" style="margin-left:8px;">Sign Out</a>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="btn">Sign In</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>
