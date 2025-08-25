@@ -50,3 +50,4 @@ The app auto-creates tables on boot. No migrations necessary for this starter.
 - Locally we recommend SQLite. On Railway you’ll use Postgres automatically via `DATABASE_URL`.
 - Requirements include `psycopg2-binary` **only on Linux** so your Mac won’t try to build it.
 - On startup the app logs which DB it is using.
+# redeploy
