@@ -4,5 +4,5 @@ Flask-SQLAlchemy==3.1.1
 SQLAlchemy==2.0.30
 gunicorn==21.2.0
 python-dotenv==1.0.1
-# Install Postgres driver only on Linux (e.g., Railway)
+# Postgres driver only on Linux (Railway)
 psycopg2-binary==2.9.9 ; platform_system == "Linux"

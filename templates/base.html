@@ -14,9 +14,10 @@
         <span style="margin-right:8px;color:#6b6b6b;">{{ current_user.email }}</span>
         <a href="{{ url_for('participants_list') }}">Participants</a>
         <a href="{{ url_for('reports') }}">Reports</a>
-        <a href="{{ url_for('participant_new') }}" class="btn">Enroll Participant</a>
-        {% if current_user.is_admin %}<a href="{{ url_for('register') }}" class="btn" style="margin-left:8px;">Add User</a>{% endif %}
-      <a href="{{ url_for('logout') }}" class="btn" style="margin-left:8px;">Sign Out</a>
+        {% if current_user.is_admin %}
+          <a href="{{ url_for('register') }}" class="btn" style="margin-left:8px;">Add User</a>
+        {% endif %}
+        <a href="{{ url_for('logout') }}" class="btn" style="margin-left:8px;">Sign Out</a>
       {% else %}
         <a href="{{ url_for('login') }}" class="btn">Sign In</a>
       {% endif %}

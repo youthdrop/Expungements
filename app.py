@@ -24,7 +24,6 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-change-me")
 
 db = SQLAlchemy(app)
 
-# Login manager
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
@@ -37,13 +36,15 @@ def seed_admin_user():
     admin_email = os.getenv("ADMIN_EMAIL")
     admin_password = os.getenv("ADMIN_PASSWORD")
     if admin_email and admin_password:
-        if not User.query.filter_by(email=admin_email).first():
-            u = User(email=admin_email)
+        u = User.query.filter(db.func.lower(User.email) == admin_email.lower()).first()
+        if not u:
+            u = User(email=admin_email, is_admin=True)
             u.set_password(admin_password)
-            u.is_admin = True
             db.session.add(u)
-            db.session.commit()
-            app.logger.info("Seeded admin user: %s", admin_email)
+        else:
+            u.is_admin = True
+            u.set_password(admin_password)  # update password if changed
+        db.session.commit()
 
 class User(UserMixin, db.Model):
     __tablename__ = "users"
@@ -76,7 +77,6 @@ class Case(db.Model):
     charges = db.Column(db.Text)
     date_of_conviction = db.Column(db.Date)
 
-    # checklist
     petition_completed = db.Column(db.Boolean, default=False)
     interview_completed = db.Column(db.Boolean, default=False)
     revenue_recovery_contacted = db.Column(db.Boolean, default=False)
@@ -92,7 +92,7 @@ class CaseNote(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     case_id = db.Column(db.Integer, db.ForeignKey("cases.id"), nullable=False)
     note_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    method_of_contact = db.Column(db.String(50))  # participant_called, staff_called, meeting, court_support
+    method_of_contact = db.Column(db.String(50))
     content = db.Column(db.Text, nullable=False)
 
     case = db.relationship("Case", back_populates="notes")
@@ -112,18 +112,14 @@ def parse_date(value: str):
         return None
 
 # ---------- Routes ----------
-
 from flask import request
-
 @app.before_request
 def login_guard_before_request():
-    # Allow unauthenticated access only to login, static files, and health
     open_endpoints = {"login", "static", "health"}
     if request.endpoint in open_endpoints or request.endpoint is None:
         return
     if not current_user.is_authenticated:
         return redirect(url_for("login"))
-
 
 @app.route("/")
 def index():
@@ -151,6 +147,31 @@ def logout():
     logout_user()
     flash("Signed out.", "success")
     return redirect(url_for("login"))
+
+# Admin-only register
+@app.route("/register", methods=["GET", "POST"])
+@login_required
+def register():
+    if not getattr(current_user, "is_admin", False):
+        flash("Admins only.", "error")
+        return redirect(url_for("participants_list"))
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+        if not email or not password:
+            flash("Email and password are required.", "error")
+            return redirect(request.url)
+        if User.query.filter(db.func.lower(User.email) == email).first():
+            flash("That email is already in use.", "error")
+            return redirect(request.url)
+        u = User(email=email)
+        u.set_password(password)
+        u.is_admin = bool(request.form.get("is_admin"))
+        db.session.add(u)
+        db.session.commit()
+        flash("User created.", "success")
+        return redirect(url_for("participants_list"))
+    return render_template("register.html")
 
 # Participants
 @app.route("/participants")
@@ -247,7 +268,6 @@ def case_update(case_id):
     c.charges = request.form.get("charges", "").strip()
     c.date_of_conviction = parse_date(request.form.get("date_of_conviction", "").strip())
 
-    # Checklist
     c.petition_completed = bool(request.form.get("petition_completed"))
     c.interview_completed = bool(request.form.get("interview_completed"))
     c.revenue_recovery_contacted = bool(request.form.get("revenue_recovery_contacted"))
@@ -293,38 +313,10 @@ def case_add_note(case_id):
 def health():
     return "ok", 200
 
-
-# Admin-only user registration
-@app.route("/register", methods=["GET", "POST"])
-@login_required
-def register():
-    if not getattr(current_user, "is_admin", False):
-        flash("Admins only.", "error")
-        return redirect(url_for("participants_list"))
-    if request.method == "POST":
-        email = request.form.get("email", "").strip().lower()
-        password = request.form.get("password", "")
-        if not email or not password:
-            flash("Email and password are required.", "error")
-            return redirect(request.url)
-        if User.query.filter(db.func.lower(User.email) == email).first():
-            flash("That email is already in use.", "error")
-            return redirect(request.url)
-        u = User(email=email)
-        u.set_password(password)
-        u.is_admin = bool(request.form.get("is_admin"))
-        db.session.add(u)
-        db.session.commit()
-        flash("User created.", "success")
-        return redirect(url_for("participants_list"))
-    return render_template("register.html")
-
-
 # ---------- Reports ----------
 @app.route("/reports")
 @login_required
 def reports():
-    # Parse date filters (YYYY-MM-DD)
     from_str = request.args.get("from", "").strip()
     to_str = request.args.get("to", "").strip()
     date_from = None
@@ -333,17 +325,15 @@ def reports():
         try:
             date_from = datetime.strptime(from_str, "%Y-%m-%d").date()
         except ValueError:
-            flash("Invalid 'from' date; use YYYY-MM-DD.", "error")
+            flash("Invalid 'from' date", "error")
     if to_str:
         try:
             date_to = datetime.strptime(to_str, "%Y-%m-%d").date()
         except ValueError:
-            flash("Invalid 'to' date; use YYYY-MM-DD.", "error")
+            flash("Invalid 'to' date", "error")
 
-    # Counts
     total_participants = db.session.query(db.func.count(Participant.id)).scalar()
 
-    # Cases filtered by date_of_conviction when a range is given
     cases_query = Case.query
     if date_from:
         cases_query = cases_query.filter(Case.date_of_conviction >= date_from)
@@ -353,7 +343,6 @@ def reports():
     count_cases_filtered = len(cases_filtered)
     count_cases_total = db.session.query(db.func.count(Case.id)).scalar()
 
-    # Notes filtered by note_date
     notes_query = CaseNote.query
     if date_from:
         notes_query = notes_query.filter(CaseNote.note_date >= datetime.combine(date_from, datetime.min.time()))
@@ -362,7 +351,6 @@ def reports():
     count_notes_filtered = notes_query.count()
     count_notes_total = db.session.query(db.func.count(CaseNote.id)).scalar()
 
-    # Checklist rollups over the filtered cases
     checklist = {
         "petition_completed": sum(1 for c in cases_filtered if c.petition_completed),
         "interview_completed": sum(1 for c in cases_filtered if c.interview_completed),
@@ -372,89 +360,68 @@ def reports():
         "court_case_filed": sum(1 for c in cases_filtered if c.court_case_filed),
     }
 
-    return render_template(
-        "reports.html",
-        from_str=from_str,
-        to_str=to_str,
+    return render_template("reports.html",
+        from_str=from_str, to_str=to_str,
         total_participants=total_participants,
         count_cases_total=count_cases_total,
         count_cases_filtered=count_cases_filtered,
         count_notes_total=count_notes_total,
         count_notes_filtered=count_notes_filtered,
         checklist=checklist,
-        cases=cases_filtered,
-    )
+        cases=cases_filtered)
 
 @app.route("/reports/csv")
 @login_required
 def reports_csv():
-    # Same filter logic
     from_str = request.args.get("from", "").strip()
     to_str = request.args.get("to", "").strip()
     date_from = None
     date_to = None
     if from_str:
-        try:
-            date_from = datetime.strptime(from_str, "%Y-%m-%d").date()
-        except ValueError:
-            pass
+        try: date_from = datetime.strptime(from_str, "%Y-%m-%d").date()
+        except ValueError: pass
     if to_str:
-        try:
-            date_to = datetime.strptime(to_str, "%Y-%m-%d").date()
-        except ValueError:
-            pass
+        try: date_to = datetime.strptime(to_str, "%Y-%m-%d").date()
+        except ValueError: pass
 
     cases_query = Case.query.join(Participant, Case.participant_id == Participant.id)
-    if date_from:
-        cases_query = cases_query.filter(Case.date_of_conviction >= date_from)
-    if date_to:
-        cases_query = cases_query.filter(Case.date_of_conviction <= date_to)
+    if date_from: cases_query = cases_query.filter(Case.date_of_conviction >= date_from)
+    if date_to: cases_query = cases_query.filter(Case.date_of_conviction <= date_to)
     rows = cases_query.add_columns(
         Participant.first_name, Participant.last_name, Participant.email, Participant.phone
     ).all()
 
-    # Build CSV
-    import csv
+    import csv, io
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow([
-        "Participant First Name","Participant Last Name","Participant Email","Participant Phone",
-        "Case Number","Date of Conviction","Charges",
-        "Petition Completed","Interview Completed","R&R Contacted","Declaration Completed","Social Bio Completed","Court Case Filed",
-        "Notes Count"
-    ])
+    writer.writerow(["First","Last","Email","Phone","Case #","Conviction Date","Charges",
+                     "Petition","Interview","R&R","Declaration","Social Bio","Filed","Notes Count"])
     for row in rows:
-        c = row[0]
-        p_first, p_last, p_email, p_phone = row[1], row[2], row[3], row[4]
+        c = row[0]; p_first, p_last, p_email, p_phone = row[1],row[2],row[3],row[4]
         notes_count = CaseNote.query.filter_by(case_id=c.id).count()
-        writer.writerow([
-            p_first, p_last, p_email or "", p_phone or "",
-            c.case_number, c.date_of_conviction or "", (c.charges or "").replace("\n"," ").replace("\r"," "),
+        writer.writerow([p_first,p_last,p_email or "",p_phone or "",
+            c.case_number,c.date_of_conviction or "",c.charges or "",
             "Yes" if c.petition_completed else "No",
             "Yes" if c.interview_completed else "No",
             "Yes" if c.revenue_recovery_contacted else "No",
             "Yes" if c.declaration_completed else "No",
             "Yes" if c.social_bio_completed else "No",
             "Yes" if c.court_case_filed else "No",
-            notes_count
-        ])
+            notes_count])
 
     resp = make_response(output.getvalue())
     resp.headers["Content-Type"] = "text/csv"
-    filename = "cases_report.csv"
-    if from_str or to_str:
-        filename = f"cases_report_{from_str or 'start'}_{to_str or 'end'}.csv"
-    resp.headers["Content-Disposition"] = f"attachment; filename={filename}"
+    resp.headers["Content-Disposition"] = "attachment; filename=cases_report.csv"
     return resp
 
-# ---------- Error Handlers ----------
+# Error handlers
 @app.errorhandler(404)
 def not_found(e):
-    return render_template("base.html", content="<h2>Not Found</h2><p>The item you requested was not found.</p>"), 404
+    return "<h2>Not Found</h2>", 404
 
 @app.errorhandler(500)
 def server_error(e):
-    return render_template("base.html", content="<h2>Server Error</h2><p>Something went wrong.</p>"), 500
+    return "<h2>Server Error</h2>", 500
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
