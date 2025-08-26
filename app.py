@@ -13,6 +13,8 @@ from flask_login import (
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import or_  # for filters
 
+app = Flask(__name__)
+app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "dev-fallback-key")
 
 # -----------------------------------------------------------------------------
 # App / Config
@@ -33,6 +35,24 @@ db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
+# --- ensure admin from env on boot ---
+import os
+
+def ensure_admin_from_env():
+    email = os.getenv("ADMIN_EMAIL")
+    pwd   = os.getenv("ADMIN_PASSWORD")
+    if not email or not pwd:
+        return
+    with app.app_context():
+        u = User.query.filter_by(email=email).first()
+        if not u:
+            u = User(email=email, is_admin=True)
+            db.session.add(u)
+        u.set_password(pwd)
+        db.session.commit()
+
+# call once at startup
+ensure_admin_from_env()
 
 # -----------------------------------------------------------------------------
 # Models
