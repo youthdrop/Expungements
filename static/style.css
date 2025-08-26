@@ -1,108 +1,174 @@
 /* Black & White Minimal UI */
-:root { --bg:#fff; --fg:#111; --muted:#6b6b6b; --border:#e5e5e5; }
-*{box-sizing:border-box}
-html,body{margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Helvetica Neue,Arial}
-body{background:var(--bg);color:var(--fg)}
-.container{max-width:1100px;margin:0 auto;padding:24px}
-.header{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:24px}
-.header a.brand{text-decoration:none;color:var(--fg);font-weight:700;letter-spacing:.5px}
-.header nav a{margin-left:16px;text-decoration:none;color:var(--fg)}
-.header nav a:hover{text-decoration:underline}
-.btn{display:inline-block;padding:10px 14px;border:1px solid var(--fg);background:#fff;color:var(--fg);text-decoration:none;border-radius:6px;font-size:14px;cursor:pointer}
-.btn:hover{background:#f5f5f5}
-.btn.primary{background:#111;color:#fff}
-.btn.primary:hover{background:#333}
-label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
-.field{margin-bottom:14px}
-.table{width:100%;border-collapse:collapse;border:1px solid var(--border)}
-.table th,.table td{border-bottom:1px solid var(--border);padding:10px 12px;text-align:left;font-size:14px}
-.table th{background:#fafafa}
-.card{border:1px solid var(--border);border-radius:10px;padding:16px;background:#fff}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
-.flash{padding:10px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:16px}
-.flash.error,.flash.success{border-color:#000;background:#fff;color:#000}
-.badge{border:1px solid #111;padding:2px 6px;border-radius:6px;font-size:12px}
-.checklist{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
-.checklist label{display:flex;align-items:center;gap:8px;color:#111}
+:root { 
+  --bg:#fff; 
+  --fg:#111; 
+  --muted:#6b6b6b; 
+  --border:#e5e5e5; 
+}
 
-/* Shaded inputs & focus state */
+* { box-sizing:border-box }
+
+html,body {
+  margin:0;
+  padding:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Helvetica Neue,Arial;
+}
+
+body {
+  background:var(--bg);
+  color:var(--fg);
+}
+
+.container {
+  max-width:1100px;
+  margin:0 auto;
+  padding:24px;
+}
+
+.header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:1px solid var(--border);
+  padding-bottom:12px;
+  margin-bottom:24px;
+}
+
+.header a.brand {
+  text-decoration:none;
+  color:var(--fg);
+  font-weight:700;
+  letter-spacing:.5px;
+}
+
+.header nav a {
+  margin-left:16px;
+  text-decoration:none;
+  color:var(--fg);
+}
+.header nav a:hover { text-decoration:underline; }
+
+/* === Buttons === */
+.btn {
+  display:inline-block;
+  padding:10px 14px;
+  border-radius:10px;
+  font-size:14px;
+  cursor:pointer;
+  text-decoration:none;
+  font-weight:600;
+  border:1px solid #000;
+  background:#fff;    /* default button white */
+  color:#000;         /* black text */
+}
+
+.btn:hover {
+  background:#f5f5f5;
+}
+
+.btn.primary {
+  background:#000;   /* solid black */
+  color:#fff;        /* white text */
+  border:1px solid #000;
+}
+.btn.primary:hover {
+  background:#333;
+}
+
+/* === Forms === */
+label {
+  font-size:13px;
+  color:var(--muted);
+  display:block;
+  margin-bottom:6px;
+}
+
+.field { margin-bottom:14px; }
+
 input[type=text],
 input[type=email],
+input[type=password],
+input[type=tel],
 input[type=date],
 input[type=datetime-local],
 textarea,
-select{
+select {
   width:100%;
   padding:10px 12px;
   border:1px solid var(--border);
   border-radius:6px;
-  background:#f7f7f7; /* light shading */
+  background:#f7f7f7;
   color:var(--fg);
+  font-size:16px;
+  line-height:1.25;
 }
+
 input:focus,
 textarea:focus,
-select:focus{
+select:focus {
   outline:none;
   border-color:#111;
-  background:#f3f3f3; /* slightly darker on focus */
-}
-textarea{min-height:120px}
-
-/* === Form controls (global) === */
-.field {
-  margin-bottom: 12px;
+  background:#f3f3f3;
+  box-shadow:0 0 0 2px rgba(0,0,0,0.08);
 }
 
-.field label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 6px;
+textarea { min-height:120px; }
+
+/* === Tables & Cards === */
+.table {
+  width:100%;
+  border-collapse:collapse;
+  border:1px solid var(--border);
+}
+.table th,.table td {
+  border-bottom:1px solid var(--border);
+  padding:10px 12px;
+  text-align:left;
+  font-size:14px;
+}
+.table th { background:#fafafa; }
+
+.card {
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:16px;
+  background:#fff;
 }
 
-.field input,
-.field select,
-.field textarea {
-  display: block;
-  width: 100%;
-  box-sizing: border-box;        /* includes padding in width calc */
-  padding: 10px 12px;
-  font-size: 16px;
-  line-height: 1.25;
-  border: 1px solid #d0d0d0;
-  border-radius: 8px;
-  background: #fff;
-  outline: none;
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:16px;
 }
 
-.field input:focus,
-.field select:focus,
-.field textarea:focus {
-  border-color: #000;           /* subtle focus */
-  box-shadow: 0 0 0 2px rgba(0,0,0,0.08);
+/* === Flash messages === */
+.flash {
+  padding:10px 12px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  margin-bottom:16px;
+}
+.flash.error,.flash.success {
+  border-color:#000;
+  background:#fff;
+  color:#000;
 }
 
-/* Ensure consistent height for text-like inputs */
-.field input[type="text"],
-.field input[type="email"],
-.field input[type="password"],
-.field input[type="tel"],
-.field input[type="date"],
-.field input[type="search"] {
-  height: 44px;                 /* same visual size */
+.badge {
+  border:1px solid #111;
+  padding:2px 6px;
+  border-radius:6px;
+  font-size:12px;
 }
 
-/* Make full-width buttons match forms nicely */
-.btn {
-  display: inline-block;
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1px solid #000;
-  background: #000;
-  color: #fff;
-  text-decoration: none;
-  cursor: pointer;
+.checklist {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:10px;
 }
-
-.btn.primary { background:#000; color:#fff; }
-.btn:hover { opacity: 0.92; }
-
+.checklist label {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:#111;
+}

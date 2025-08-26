@@ -2,7 +2,7 @@
 {% block content %}
   <div class="card" style="margin-bottom:16px;">
     <h2 style="margin-top:0;">Reports</h2>
-    <form method="get" action="{{ url_for('reports') }}">
+    <form method="get" action="{{ url_for('reports_home') }}">
       <div class="grid">
         <div class="field">
           <label for="from">From (YYYY-MM-DD)</label>
@@ -14,7 +14,7 @@
         </div>
       </div>
       <button class="btn" type="submit">Apply Filters</button>
-      <a class="btn" href="{{ url_for('reports') }}">Clear</a>
+      <a class="btn" href="{{ url_for('reports_home') }}">Clear</a>
       <a class="btn primary"
          href="{{ url_for('reports_csv') }}{% if from_str or to_str %}?{% if from_str %}from={{ from_str }}{% endif %}{% if from_str and to_str %}&{% endif %}{% if to_str %}to={{ to_str }}{% endif %}{% endif %}"
          style="margin-left:8px;">Download CSV</a>
