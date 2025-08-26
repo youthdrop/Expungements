@@ -12,9 +12,9 @@
     <nav>
       {% if current_user.is_authenticated %}
         <span style="margin-right:8px;color:#6b6b6b;">{{ current_user.email }}</span>
-        <a href="{{ url_for('participants_list') }}">Participants</a>
-        <a href="{{ url_for('reports') }}">Reports</a>
-        {% if current_user.is_admin %}
+        <a href="{{ url_for('participants') }}">Participants</a>
+        <a href="{{ url_for('reports_home') }}">Reports</a>
+        {% if current_user.is_authenticated and (current_user.is_admin | default(false)) %}
           <a href="{{ url_for('register') }}" class="btn" style="margin-left:8px;">Add User</a>
         {% endif %}
         <a href="{{ url_for('logout') }}" class="btn" style="margin-left:8px;">Sign Out</a>

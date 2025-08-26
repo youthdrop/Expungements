@@ -2,32 +2,74 @@
 {% block content %}
   <div class="card">
     <h2 style="margin-top:0;">Enroll Participant</h2>
-    <form method="post">
+
+    {# If you're using Flask-WTF, ensure the route passes a `form` and use form.hidden_tag() #}
+    <form method="post" action="{{ url_for('participant_new') }}">
+      {# CSRF token (works if you're using Flask-WTF). If not, it's harmless. #}
+      {% if form is defined and form.hidden_tag is defined %}
+        {{ form.hidden_tag() }}
+      {% endif %}
+
       <div class="grid">
         <div class="field">
           <label for="first_name">First Name *</label>
-          <input id="first_name" name="first_name" type="text" required>
+          <input
+            id="first_name"
+            name="first_name"
+            type="text"
+            required
+            value="{{ request.form.get('first_name','') }}"
+          >
         </div>
+
         <div class="field">
           <label for="last_name">Last Name *</label>
-          <input id="last_name" name="last_name" type="text" required>
+          <input
+            id="last_name"
+            name="last_name"
+            type="text"
+            required
+            value="{{ request.form.get('last_name','') }}"
+          >
         </div>
+
         <div class="field">
           <label for="phone">Phone</label>
-          <input id="phone" name="phone" type="text">
+          <input
+            id="phone"
+            name="phone"
+            type="text"
+            inputmode="tel"
+            value="{{ request.form.get('phone','') }}"
+            placeholder="(###) ###-####"
+          >
         </div>
+
         <div class="field">
           <label for="email">Email</label>
-          <input id="email" name="email" type="email">
+          <input
+            id="email"
+            name="email"
+            type="email"
+            value="{{ request.form.get('email','') }}"
+          >
         </div>
+
         <div class="field">
           <label for="dob">Date of Birth</label>
-          <input id="dob" name="dob" type="date">
+          <input
+            id="dob"
+            name="dob"
+            type="date"
+            value="{{ request.form.get('dob','') }}"
+          >
         </div>
       </div>
+
       <div style="margin-top:12px;">
         <button class="btn primary" type="submit">Enroll</button>
-        <a class="btn" href="{{ url_for('participants_list') }}">Cancel</a>
+        <!-- FIX: point to the correct list endpoint -->
+        <a class="btn" href="{{ url_for('participants') }}">Cancel</a>
       </div>
     </form>
   </div>

@@ -1,47 +1,132 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% block content %}
+<div class="container">
+  <div class="header">
+    <a class="brand" href="{{ url_for('participants') }}">Expungements</a>
+    <nav>
+      <a href="{{ url_for('participants') }}">Participants</a>
+      <a href="{{ url_for('reports_home') }}">Reports</a>
+      <a href="{{ url_for('logout') }}">Sign out</a>
+    </nav>
+  </div>
+
   <div class="card" style="margin-bottom:16px;">
-    <h2 style="margin-top:0;">{{ p.first_name }} {{ p.last_name }}</h2>
-    <div class="grid">
-      <div><strong>Phone:</strong> {{ p.phone or '—' }}</div>
-      <div><strong>Email:</strong> {{ p.email or '—' }}</div>
-      <div><strong>DOB:</strong> {{ p.dob or '—' }}</div>
+    <h1 style="margin:0;">{{ p.full_name }}</h1>
+    <div style="margin-top:8px;color:#6b6b6b;">
+      {% if p.email %}<span>Email: {{ p.email }}</span>{% endif %}
+      {% if p.phone %}<span style="margin-left:12px;">Phone: {{ p.phone }}</span>{% endif %}
+      {% if p.dob %}<span style="margin-left:12px;">DOB: {{ p.dob.isoformat() }}</span>{% endif %}
+      <span style="margin-left:12px;">Status: <span class="badge">{{ p.status }}</span></span>
+    </div>
+    <div style="margin-top:12px;">
+      <a class="btn" href="{{ url_for('case_new', participant_id=p.id) }}">➕ Add Case</a>
+      <form action="{{ url_for('participant_delete', participant_id=p.id) }}" method="post" style="display:inline-block;margin-left:8px;" onsubmit="return confirm('Delete this participant and all cases/notes?');">
+        <button class="btn" type="submit">🗑 Delete Participant</button>
+      </form>
     </div>
   </div>
 
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <h3 style="margin:0;">Cases</h3>
-      <a class="btn" href="{{ url_for('case_new', participant_id=p.id) }}">Add Case</a>
+  {% if cases %}
+    <div class="grid">
+      {% for c in cases %}
+        <section class="card">
+          <h2 style="margin-top:0;">Case {{ c.case_number }}</h2>
+          <form action="{{ url_for('case_update', case_id=c.id) }}" method="post">
+            <div class="field">
+              <label for="case_number_{{ c.id }}">Case Number</label>
+              <input id="case_number_{{ c.id }}" type="text" name="case_number" value="{{ c.case_number }}">
+            </div>
+
+            <div class="field">
+              <label for="charges_{{ c.id }}">Charges</label>
+              <textarea id="charges_{{ c.id }}" name="charges">{{ c.charges or '' }}</textarea>
+            </div>
+
+            <div class="field">
+              <label for="doc_{{ c.id }}">Date of conviction</label>
+              <input id="doc_{{ c.id }}" type="date" name="date_of_conviction" value="{{ c.date_of_conviction.isoformat() if c.date_of_conviction }}">
+            </div>
+
+            <div class="field">
+              <label for="status_{{ c.id }}">Case Status</label>
+              <select id="status_{{ c.id }}" name="status">
+                {% for s in ["active","expungement_granted","expungement_denied","non_response"] %}
+                  <option value="{{ s }}" {% if c.status == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="field">
+              <div class="checklist">
+                <label><input type="checkbox" name="petition_completed" {% if c.petition_completed %}checked{% endif %}> Petition completed</label>
+                <label><input type="checkbox" name="interview_completed" {% if c.interview_completed %}checked{% endif %}> Interview completed</label>
+                <label><input type="checkbox" name="revenue_recovery_contacted" {% if c.revenue_recovery_contacted %}checked{% endif %}> Revenue & Recovery contacted</label>
+                <label><input type="checkbox" name="declaration_completed" {% if c.declaration_completed %}checked{% endif %}> Declaration completed</label>
+                <label><input type="checkbox" name="social_bio_completed" {% if c.social_bio_completed %}checked{% endif %}> Social bio completed</label>
+                <label><input type="checkbox" name="court_case_filed" {% if c.court_case_filed %}checked{% endif %}> Court case filed</label>
+              </div>
+            </div>
+
+            <button class="btn primary" type="submit">Update Case</button>
+            <a class="btn" style="margin-left:8px;" href="{{ url_for('case_view', case_id=c.id) }}">Open Case</a>
+          </form>
+
+          <hr style="margin:18px 0;border:none;border-top:1px solid #e5e5e5;">
+
+          <h3 style="margin-top:0;">Notes</h3>
+
+          <form action="{{ url_for('case_add_note', case_id=c.id) }}" method="post" class="card" style="padding:12px;margin-bottom:12px;">
+            <div class="field">
+              <label for="timestamp_{{ c.id }}">Date & time</label>
+              <input id="timestamp_{{ c.id }}" type="datetime-local" name="timestamp">
+            </div>
+
+            <div class="field">
+              <label for="method_{{ c.id }}">Method</label>
+              <select id="method_{{ c.id }}" name="method">
+                <option value="">—</option>
+                <option>participant called</option>
+                <option>staff called</option>
+                <option>meeting</option>
+                <option>court support</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="content_{{ c.id }}">What happened</label>
+              <textarea id="content_{{ c.id }}" name="content" placeholder="Write a note..."></textarea>
+            </div>
+
+            <button class="btn" type="submit">Add Note</button>
+          </form>
+
+          {% if c.notes %}
+            <table class="table">
+              <thead>
+                <tr>
+                  <th style="width:180px;">When</th>
+                  <th style="width:160px;">Method</th>
+                  <th>Note</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for n in c.notes %}
+                  <tr>
+                    <td>{{ n.timestamp.strftime("%Y-%m-%d %H:%M") }}</td>
+                    <td>{{ n.method or "—" }}</td>
+                    <td>{{ n.content }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% else %}
+            <p style="color:#6b6b6b;">No notes yet.</p>
+          {% endif %}
+        </section>
+      {% endfor %}
     </div>
-    <table class="table" style="margin-top:12px;">
-      <thead>
-        <tr>
-          <th>Case #</th>
-          <th>Date of Conviction</th>
-          <th>Charges</th>
-          <th>Checklist</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for c in p.cases %}
-        <tr>
-          <td><a href="{{ url_for('case_detail', case_id=c.id) }}">{{ c.case_number }}</a></td>
-          <td>{{ c.date_of_conviction or '—' }}</td>
-          <td>{{ c.charges[:80] ~ ('…' if c.charges and c.charges|length>80 else '') }}</td>
-          <td>
-            <span class="badge">{{ '✔' if c.petition_completed else '○' }} Petition</span>
-            <span class="badge">{{ '✔' if c.interview_completed else '○' }} Interview</span>
-            <span class="badge">{{ '✔' if c.revenue_recovery_contacted else '○' }} R&R</span>
-            <span class="badge">{{ '✔' if c.declaration_completed else '○' }} Declaration</span>
-            <span class="badge">{{ '✔' if c.social_bio_completed else '○' }} Social Bio</span>
-            <span class="badge">{{ '✔' if c.court_case_filed else '○' }} Filed</span>
-          </td>
-        </tr>
-        {% else %}
-        <tr><td colspan="4">No cases yet.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+  {% else %}
+    <div class="card"><p>No cases yet. Click “Add Case”.</p></div>
+  {% endif %}
+</div>
 {% endblock %}

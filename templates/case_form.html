@@ -8,16 +8,61 @@
           <label for="case_number">Case Number *</label>
           <input id="case_number" name="case_number" type="text" required value="{{ case.case_number if case else '' }}">
         </div>
+
+        <div class="field">
+          <label for="date_filed">Date Filed</label>
+          <input id="date_filed" name="date_filed" type="date" value="{{ case.date_filed if case and case.date_filed else '' }}">
+        </div>
+
         <div class="field">
           <label for="date_of_conviction">Date of Conviction</label>
           <input id="date_of_conviction" name="date_of_conviction" type="date" value="{{ case.date_of_conviction if case and case.date_of_conviction else '' }}">
         </div>
+
+        <div class="field">
+          <label for="court_location">Court Location</label>
+          <select id="court_location" name="court_location">
+            <option value="" {% if not case or not case.court_location %}selected{% endif %}></option>
+            <option value="Central" {% if case and case.court_location=='Central' %}selected{% endif %}>Central</option>
+            <option value="East" {% if case and case.court_location=='East' %}selected{% endif %}>East</option>
+            <option value="North" {% if case and case.court_location=='North' %}selected{% endif %}>North</option>
+            <option value="South" {% if case and case.court_location=='South' %}selected{% endif %}>South</option>
+          </select>
+        </div>
       </div>
+
       <div class="field">
         <label for="charges">Charges</label>
         <textarea id="charges" name="charges">{{ case.charges if case else '' }}</textarea>
       </div>
 
+      <div class="grid">
+        <div class="field">
+          <label for="sentence">Sentence</label>
+          <textarea id="sentence" name="sentence">{{ case.sentence if case else '' }}</textarea>
+        </div>
+        <div class="field">
+          <label for="date_of_sentence">Date of Sentence</label>
+          <input id="date_of_sentence" name="date_of_sentence" type="date" value="{{ case.date_of_sentence if case and case.date_of_sentence else '' }}">
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="field">
+          <label for="fines_fees_restitution">Fines / Fees / Restitution</label>
+          <input id="fines_fees_restitution" name="fines_fees_restitution" type="text" value="{{ case.fines_fees_restitution if case else '' }}">
+        </div>
+        <div class="field">
+          <label for="probation_start_date">Probation Start Date</label>
+          <input id="probation_start_date" name="probation_start_date" type="date" value="{{ case.probation_start_date if case and case.probation_start_date else '' }}">
+        </div>
+        <div class="field">
+          <label for="probation_end_date">Probation End Date</label>
+          <input id="probation_end_date" name="probation_end_date" type="date" value="{{ case.probation_end_date if case and case.probation_end_date else '' }}">
+        </div>
+      </div>
+
+      <h3>Checklist</h3>
       <div class="checklist">
         <label><input type="checkbox" name="petition_completed" {{ 'checked' if case and case.petition_completed else '' }}> Petition Completed</label>
         <label><input type="checkbox" name="interview_completed" {{ 'checked' if case and case.interview_completed else '' }}> Interview Completed</label>
